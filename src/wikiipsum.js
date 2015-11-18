@@ -19,7 +19,7 @@
       var wikiParagraphIndex = 0;
       while (elementsToReplace.length > 0) {
         var elToReplace = elementsToReplace[0];
-        var newElement = '<p class="_ipsum-paragraph">' +
+        var newElement = '<p class="ipsum-paragraph">' +
           _wikiParagraphs[wikiParagraphIndex++ % _wikiParagraphs.length] +
           '</p>';
         elToReplace.insertAdjacentHTML('afterend', newElement);
@@ -61,20 +61,34 @@
     document.body.appendChild(script);
   }
 
-  function _parseContent(DOMContent) {
+  function _parseContent(wikiDOM) {
     var allParagraphs = [];
-    var paragraphObj = DOMContent.getElementsByTagName('p');
+    var paragraphObj = wikiDOM.getElementsByTagName('p');
+
     for (var key in paragraphObj) {
       if (paragraphObj.hasOwnProperty(key)) {
-        allParagraphs.push(paragraphObj[key].innerHTML);
+        var paragraphToPush = _removeFootnoteLinks(paragraphObj[key]);
+        allParagraphs.push(paragraphToPush.innerHTML);
       }
     }
+
+    // once we've replaced all elements, remove all of the wiki content from the DOM
+    document.getElementById('_wiki-content').remove()
 
     return allParagraphs.filter(function(p) {
       return (_lengthOfElementContent(p) > 100);
     }).map(function(p) {
       return _formatLinksInElement(p);
     });
+  }
+
+  function _removeFootnoteLinks(el) {
+    var footnotes = el.getElementsByTagName("sup");
+    var i = 0;
+    for (i = footnotes.length - 1; i >= 0; i--) {
+        footnotes[i].parentNode.removeChild(footnotes[i]);
+    }
+    return el;
   }
 
   function _lengthOfElementContent(el) {
