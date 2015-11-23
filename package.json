@@ -1,0 +1,19 @@
+{
+  "name": "wiki-ipsum",
+  "version": "1.0.0",
+  "description": "A client-side, dependency-free module for generating more useful Lorem Ipsum.",
+  "main": "wikiipsum.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evantarrh/wiki-ipsum.git"
+  },
+  "author": "Evan Tarrh",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/evantarrh/wiki-ipsum/issues"
+  },
+  "homepage": "https://github.com/evantarrh/wiki-ipsum"
+}
