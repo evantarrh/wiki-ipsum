@@ -4,26 +4,32 @@
   var _wikiParagraphs = [];
 
   function Ipsum() {
-    this.elements = document.getElementsByClassName('ipsum');
     return this;
   }
 
   Ipsum.prototype.init = function() {
     _getRandomWikiPage();
     _parseWhenReady('#_wiki-content');
-    this.insertParagraphsWhenReady(this.elements);
+    this.insertParagraphsWhenReady(document.getElementsByClassName('ipsum'));
   };
 
   Ipsum.prototype.insertParagraphsWhenReady = function(elementsToReplace) {
     if (_wikiParagraphs.length !== 0) {
-      var wikiParagraphIndex = 0;
-      while (elementsToReplace.length > 0) {
-        var elToReplace = elementsToReplace[0];
-        var newElement = '<p class="ipsum-paragraph">' +
-          _wikiParagraphs[wikiParagraphIndex++ % _wikiParagraphs.length] +
-          '</p>';
-        elToReplace.insertAdjacentHTML('afterend', newElement);
-        elToReplace.remove();
+      var reload = false;
+      while ((elementsToReplace.length > 0) && !reload) {
+        if (_wikiParagraphs.length !== 0) {
+          var newElement = '<p class="ipsum-paragraph">' +
+            _wikiParagraphs.shift() +
+            '</p>';
+
+          var elToReplace = elementsToReplace[0];
+          elToReplace.insertAdjacentHTML('afterend', newElement);
+          elToReplace.remove();
+        }
+        else {
+          reload = true;
+          this.init();
+        }
       }
     }
     else {
@@ -73,9 +79,22 @@
     }
 
     // once we've replaced all elements, remove all of the wiki content from the DOM
-    document.getElementById('_wiki-content').remove()
+    document.getElementById('_wiki-content').remove();
 
-    return allParagraphs.filter(function(p) {
+    var validParagraphs = _filterParagraphs(allParagraphs);
+
+    // Some articles (e.g. disambiguation articles) have no paragraphs.
+    // In such cases, we have to reinitialize.
+    if (validParagraphs.length === 0) {
+      console.log('We found an article with no paragraphs. Trying again...');
+      Ipsum.prototype.init();
+    }
+
+    return validParagraphs;
+  }
+
+  function _filterParagraphs (paragraphs) {
+    return paragraphs.filter(function(p) {
       return (_lengthOfElementContent(p) > 100);
     }).map(function(p) {
       return _formatLinksInElement(p);
@@ -108,6 +127,8 @@
     // first, remove the old script from the body
     document.body.removeChild(document.getElementById('_wiki-script-1'));
 
+    // the random article API only returns a title, so we make another
+    // request to get the rest of the article
     var title = _formatSpaces(data.query.random[0].title);
     var script = document.createElement('script');
     script.id = '_wiki-script-2';
